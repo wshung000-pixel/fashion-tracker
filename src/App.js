@@ -86,8 +86,8 @@ export default function FashionTracker() {
     try {
       const data = await fetchBrandNews(brand.name);
       setBrandData(d => ({ ...d, [brand.id]: data }));
-    } catch {
-      setBrandData(d => ({ ...d, [brand.id]: { error: true } }));
+    } catch(err) {
+      setBrandData(d => ({ ...d, [brand.id]: { error: true, message: err.message || "Unknown error" } }));
     }
     setLoading(l => ({ ...l, [brand.id]: false }));
   };
@@ -329,6 +329,9 @@ export default function FashionTracker() {
               }}>
                 <div style={{ fontSize: 32, marginBottom: 12 }}>😔</div>
                 <div style={{ color: "#ff6b6b", fontSize: 14 }}>無法載入資訊，請稍後重試</div>
+                <div style={{ color: "#888", fontSize: 11, marginTop: 10, wordBreak: "break-all", padding: "0 10px" }}>
+                  錯誤：{brandData[selectedBrand.id].message}
+                </div>
               </div>
             )}
 
