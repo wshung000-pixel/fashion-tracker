@@ -12,7 +12,7 @@ npm start
 編輯 `.env` 檔案，填入你的 Anthropic API Key：
 
 ```
-REACT_APP_ANTHROPIC_API_KEY=sk-ant-xxxxxxxx
+REACT_APP_GEMINI_API_KEY=sk-ant-xxxxxxxx
 ```
 
 ## 部署到 Cloudflare Pages
@@ -24,5 +24,5 @@ REACT_APP_ANTHROPIC_API_KEY=sk-ant-xxxxxxxx
    - Build output directory: `build`
 4. **Environment Variables（重要）**：
    - 在 Cloudflare Pages 的 Settings → Environment Variables 加入：
-   - `REACT_APP_ANTHROPIC_API_KEY` = 你的 API Key
+   - `REACT_APP_GEMINI_API_KEY` = 你的 API Key
 5. 部署完成！

@@ -23,42 +23,42 @@ const BRAND_COLORS = [
 ];
 
 async function fetchBrandNews(brandName) {
-  const response = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": process.env.REACT_APP_ANTHROPIC_API_KEY || "",
-      "anthropic-version": "2023-06-01",
-      "anthropic-dangerous-direct-browser-access": "true",
-    },
-    body: JSON.stringify({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 1000,
-      tools: [{ type: "web_search_20250305", name: "web_search" }],
-      messages: [{
-        role: "user",
-        content: `Search for the latest new arrivals, new collections, or recent product drops from ${brandName} fashion brand in 2025. ${["51percent", "HDEX"].includes(brandName) ? "Note: This is a Korean streetwear brand — also search Korean sources like Musinsa, brand Instagram, or official Korean websites." : ""}
-        Return a JSON object (no markdown, no backticks) with:
-        {
-          "brand": "${brandName}",
-          "lastUpdated": "approximate date",
-          "items": [
-            {
-              "name": "product name",
-              "category": "category (e.g. 衛衣/T-shirt/外套/鞋款/配件)",
-              "description": "brief description in Traditional Chinese (繁體中文)",
-              "price": "price range if known, otherwise null",
-              "isNew": true
-            }
-          ],
-          "summary": "一句話總結這季新品重點 (in Traditional Chinese 繁體中文)"
-        }
-        Include 3-5 items. Only return valid JSON.`
-      }]
-    })
-  });
+  const apiKey = process.env.REACT_APP_GEMINI_API_KEY || "";
+  const prompt = `Search the web and find the latest new arrivals, new collections, or recent product drops from ${brandName} fashion brand in 2025 or 2026. ${["51percent", "HDEX"].includes(brandName) ? "Note: This is a Korean streetwear brand — also search Korean sources like Musinsa, brand Instagram, or official Korean websites." : ""}
+Return ONLY a valid JSON object (no markdown, no backticks, no explanation) with this exact structure:
+{
+  "brand": "${brandName}",
+  "lastUpdated": "approximate date",
+  "items": [
+    {
+      "name": "product name",
+      "category": "category (e.g. 衛衣/T-shirt/外套/鞋款/配件)",
+      "description": "brief description in Traditional Chinese (繁體中文)",
+      "price": "price range if known, otherwise null",
+      "isNew": true
+    }
+  ],
+  "summary": "一句話總結這季新品重點 (in Traditional Chinese 繁體中文)"
+}
+Include 3-5 items. Return only the JSON, nothing else.`;
+
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        tools: [{ google_search: {} }],
+        generationConfig: { temperature: 0.3 }
+      })
+    }
+  );
   const data = await response.json();
-  const text = data.content.map(b => b.type === "text" ? b.text : "").join("");
+  const text = data.candidates?.[0]?.content?.parts
+    ?.filter(p => p.text)
+    ?.map(p => p.text)
+    ?.join("") || "";
   const clean = text.replace(/```json|```/g, "").trim();
   return JSON.parse(clean);
 }
