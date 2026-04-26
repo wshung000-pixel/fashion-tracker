@@ -55,11 +55,26 @@ Include 3-5 items. Return only the JSON, nothing else.`;
     }
   );
   const data = await response.json();
+
+  // Log full response for debugging
+  console.log("Gemini raw response:", JSON.stringify(data, null, 2));
+
+  if (!data.candidates || data.candidates.length === 0) {
+    throw new Error("No candidates: " + JSON.stringify(data));
+  }
+
   const text = data.candidates?.[0]?.content?.parts
     ?.filter(p => p.text)
     ?.map(p => p.text)
     ?.join("") || "";
-  const clean = text.replace(/```json|```/g, "").trim();
+
+  console.log("Extracted text:", text);
+
+  // Try to extract JSON from anywhere in the text
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) throw new Error("No JSON found in: " + text.slice(0, 200));
+
+  const clean = jsonMatch[0].trim();
   return JSON.parse(clean);
 }
 
